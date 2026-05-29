@@ -20,6 +20,6 @@ class HomeController extends Controller
             'hard'   => Highscore::bestForMode('hard'),
         ];
 
-        return view('home', compact('highscores'));
+    return view('home', compact('highscores'));
     }
 }

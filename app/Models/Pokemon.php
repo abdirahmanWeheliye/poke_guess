@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pokemon extends Model
 {
+    protected $table = 'pokemons'; // ← add this line
+
     protected $fillable = [
         'pokedex_id',
         'name',
@@ -14,18 +16,12 @@ class Pokemon extends Model
         'generation',
     ];
 
-    /**
-     * Scope: filter by difficulty mode.
-     * easy   => generation = 1         (Pokédex #1–151)
-     * medium => generation > 1         (everything after Gen 1)
-     * hard   => all generations
-     */
     public function scopeForMode($query, string $mode)
     {
         return match ($mode) {
             'easy'   => $query->where('generation', 1),
             'medium' => $query->where('generation', '>', 1),
-            default  => $query, // hard: all
+            default  => $query,
         };
     }
 }

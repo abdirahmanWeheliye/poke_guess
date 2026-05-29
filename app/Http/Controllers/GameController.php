@@ -56,6 +56,8 @@ class GameController extends Controller
             'highscore'     => $highscore,
             'pokemon'       => $pokemon,
         ]);
+
+
     }
 
     // -------------------------------------------------------------------------
@@ -67,9 +69,9 @@ class GameController extends Controller
      * Body: { guess: "pikachu" }
      *
      * Returns JSON:
-     *   { correct: true,  score: int, pokemon: {name, display_name, sprite_url} }
+     *   { correct: true,  score: int, Pokémon: {name, display_name, sprite_url} }
      *   { correct: false, chancesLeft: int }
-     *   { game_over: true, score: int, pokemon: {name, display_name, sprite_url} }
+     *   { game_over: true, score: int, Pokémon: {name, display_name, sprite_url} }
      */
     public function guess(Request $request): JsonResponse
     {

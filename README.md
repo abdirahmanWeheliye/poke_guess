@@ -1,167 +1,66 @@
-# 🎮 PokéQuiz – Laravel Backend
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-A "Who's That Pokémon?" quiz game built in Laravel.  
-Players choose Easy (Gen 1), Medium (Gen 2+), or Hard (All) and guess Pokémon silhouettes.
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
----
+## About Laravel
 
-## 📁 File Structure
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-```
-app/
-  Http/Controllers/
-    HomeController.php        ← Home page (mode select + highscores)
-    GameController.php        ← Game session, /game/guess, /game/reveal
-  Models/
-    Pokemon.php               ← Pokémon model + scopeForMode()
-    Highscore.php             ← Highscore model + upsert logic
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-database/
-  migrations/
-    ..._create_pokemons_table.php
-    ..._create_highscores_table.php
-  seeders/
-    PokemonSeeder.php         ← Fetches ~1025 Pokémon from PokéAPI
-    DatabaseSeeder.php
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-resources/views/
-  home.blade.php              ← Mode selection screen
-  game/
-    play.blade.php            ← Quiz screen (silhouette + input)
+## Learning Laravel
 
-routes/
-  web.php                     ← GET /, GET /game, POST /game/guess, POST /game/reveal
-```
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
 
----
+You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
 
-## 🚀 Setup
+If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-### 1. Install Laravel (if starting fresh)
+## Laravel Sponsors
 
-```bash
-composer create-project laravel/laravel pokequiz
-cd pokequiz
-```
+We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
 
-### 2. Copy the files from this package
+### Premium Partners
 
-Copy all files from this package into your Laravel project, preserving the directory structure shown above.
+- **[Vehikl](https://vehikl.com/)**
+- **[Tighten Co.](https://tighten.co)**
+- **[WebReinvent](https://webreinvent.com/)**
+- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
+- **[64 Robots](https://64robots.com)**
+- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
+- **[Cyber-Duck](https://cyber-duck.co.uk)**
+- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
+- **[Jump24](https://jump24.co.uk)**
+- **[Redberry](https://redberry.international/laravel/)**
+- **[Active Logic](https://activelogic.com)**
+- **[byte5](https://byte5.de)**
+- **[OP.GG](https://op.gg)**
 
-### 3. Configure your database
+## Contributing
 
-Edit `.env`:
-```env
-DB_CONNECTION=mysql        # or sqlite, pgsql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=pokequiz
-DB_USERNAME=root
-DB_PASSWORD=your_password
-```
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-For a quick SQLite setup:
-```env
-DB_CONNECTION=sqlite
-# DB_DATABASE= (leave blank, it defaults to database/database.sqlite)
-```
-```bash
-touch database/database.sqlite
-```
+## Code of Conduct
 
-### 4. Run migrations
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-```bash
-php artisan migrate
-```
+## Security Vulnerabilities
 
-### 5. Seed the Pokémon database
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
-This fetches all ~1 025 Pokémon from the free PokéAPI (no key needed).  
-It takes about 10–20 seconds.
+## License
 
-```bash
-php artisan db:seed --class=PokemonSeeder
-```
-
-You should see: `Seeded 1025 Pokémon successfully!`
-
-### 6. Start the development server
-
-```bash
-php artisan serve
-```
-
-Visit **http://localhost:8000** and start playing!
-
----
-
-## 🎮 How It Works
-
-### Routes
-
-| Method | URL           | Description                              |
-|--------|---------------|------------------------------------------|
-| GET    | `/`           | Home – mode selection, highscores        |
-| GET    | `/game?mode=` | Start a new game (easy / medium / hard)  |
-| POST   | `/game/guess` | Submit a guess (JSON API)                |
-| POST   | `/game/reveal`| Skip & reveal the Pokémon (JSON API)     |
-
-### Game Session (stored in Laravel session)
-
-```php
-session('game') = [
-    'mode'         => 'easy',       // easy | medium | hard
-    'score'        => 0,
-    'chances_left' => 3,
-    'used_ids'     => [1, 45, 7],   // Pokémon already shown this run
-    'current_id'   => 25,           // current Pokémon's DB id
-]
-```
-
-### Scoring
-
-- ✅ Correct guess → **+100 points**, 3 chances reset, next Pokémon loads
-- ❌ Wrong guess → chances decrease; at 0 → **game over**
-- 👁 Reveal → no points, next Pokémon loads (chances reset)
-
-### Difficulty Modes
-
-| Mode   | Pokédex range  | DB filter              |
-|--------|----------------|------------------------|
-| Easy   | #001 – #151    | `generation = 1`       |
-| Medium | #152 – #1025   | `generation > 1`       |
-| Hard   | All            | no filter              |
-
-### Guess Normalization
-
-The controller normalizes both the player's input and the Pokémon's name:
-- Lowercase
-- Remove accents (é → e, etc.)
-- Strip hyphens, spaces, apostrophes
-
-So "Farfetch'd", "farfetchd", and "FARFETCH D" all count as correct.
-
----
-
-## 🖼 Pokémon Sprites
-
-Sprites are served directly from the PokéAPI's public GitHub sprites repo:
-```
-https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{id}.png
-```
-No API key or rate-limiting needed.
-
----
-
-## 📦 Optional: Re-seed or update
-
-To clear and re-seed all Pokémon:
-```bash
-php artisan db:seed --class=PokemonSeeder
-```
-
-To wipe everything and start fresh:
-```bash
-php artisan migrate:fresh --seed
-```
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
