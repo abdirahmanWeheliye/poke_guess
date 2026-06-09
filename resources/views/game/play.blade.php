@@ -60,10 +60,7 @@
 </script>
 <style>
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-    .sunburst-bg {
-        background: linear-gradient(135deg, #ba1a1a 50%, #0061a5 50%);
-        position: relative; overflow: hidden;
-    }
+    .sunburst-bg { background: linear-gradient(135deg, #ba1a1a 50%, #0061a5 50%); position: relative; overflow: hidden; }
     .sunburst-lines {
         position: absolute; top: 50%; left: 50%; width: 200%; height: 200%;
         background: repeating-conic-gradient(from 0deg, rgba(255,255,255,0.1) 0deg 15deg, transparent 15deg 30deg);
@@ -74,8 +71,9 @@
         from { transform: translate(-50%, -50%) rotate(0deg); }
         to   { transform: translate(-50%, -50%) rotate(360deg); }
     }
+    /* Fix #2: no yellow tint — reveal shows the clean sprite only */
     .silhouette { filter: brightness(0); transition: filter 0.6s ease-in-out; }
-    .revealed   { filter: brightness(1) drop-shadow(0 0 12px rgba(255,255,255,0.9)); }
+    .revealed   { filter: brightness(1); }
     .press-effect:active { transform: translate(4px, 4px); box-shadow: none !important; }
     .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
     @keyframes shake {
@@ -84,17 +82,14 @@
         30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
         40%, 60% { transform: translate3d(4px, 0, 0); }
     }
-    /* Fade overlay */
-    #result-overlay { transition: opacity 0.4s ease; }
-    /* Pokémon sprite swap fade */
     #poke-sprite { transition: opacity 0.3s ease; }
+    /* Disabled reveal button style */
+    .reveal-disabled { opacity: 0.4; cursor: not-allowed; }
 </style>
 </head>
 <body class="bg-background text-on-background font-body-md overflow-x-hidden">
 
-<!-- ═══════════════════════════════════════════════════════
-     TOP NAV BAR
-════════════════════════════════════════════════════════ -->
+<!-- TOP NAV -->
 <nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-md py-sm bg-primary border-b-4 border-on-background shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
     <div class="flex items-center gap-sm">
         <a href="{{ route('home') }}"
@@ -110,9 +105,7 @@
     </div>
 </nav>
 
-<!-- ═══════════════════════════════════════════════════════
-     MAIN CONTENT
-════════════════════════════════════════════════════════ -->
+<!-- MAIN -->
 <main class="min-h-screen pt-[100px] pb-xl sunburst-bg flex flex-col items-center">
     <div class="sunburst-lines"></div>
 
@@ -120,44 +113,47 @@
 
         <!-- Title Card -->
         <div class="bg-surface-container-lowest border-4 border-on-background p-md rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-center w-full transform -rotate-1">
-            <!-- This text alternates between "Who's That POKÉMON?" and "It's {Name}!" -->
-            <h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-on-background italic tracking-tighter leading-none mb-xs"
-                id="title-text">
+            <h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-on-background italic tracking-tighter leading-none mb-xs">
                 WHO'S THAT <br class="md:hidden"> <span class="text-tertiary" id="title-highlight">POKÉMON?</span>
             </h1>
-            <p class="font-label-mono text-label-mono text-on-surface-variant uppercase" id="mode-label">
+            <p class="font-label-mono text-label-mono text-on-surface-variant uppercase">
                 MODE: {{ strtoupper($mode) }}
             </p>
         </div>
 
-        <!-- Gameplay Layout -->
-        <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-lg items-center">
+        <!-- Gameplay Grid -->
+        <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-lg items-start">
 
-            <!-- ── Silhouette Container ── -->
-            <div class="bg-surface border-4 border-on-background p-lg rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]
-                        flex justify-center items-center relative aspect-square overflow-hidden bg-white"
-                 id="poke-container">
+            <!-- Silhouette + NEXT button below -->
+            <div class="flex flex-col gap-md">
+                <div class="bg-surface border-4 border-on-background p-lg rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]
+                            flex justify-center items-center relative aspect-square overflow-hidden bg-white"
+                     id="poke-container">
+                    <div class="absolute inset-0 opacity-10"
+                         style="background-color:#fff;background-image:radial-gradient(rgb(229,229,229) 2px,transparent 2px);background-size:20px 20px;"></div>
 
-                <div class="absolute inset-0 opacity-10"
-                     style="background-color:#fff;background-image:radial-gradient(rgb(229,229,229) 2px,transparent 2px);background-size:20px 20px;"></div>
+                    <img alt="Pokemon Silhouette"
+                         class="silhouette w-full h-full object-contain relative z-10 transform scale-110"
+                         id="poke-sprite"
+                         src="{{ $pokemon->sprite_url }}">
 
-                <img alt="Pokemon Silhouette"
-                     class="silhouette w-full h-full object-contain relative z-10 transform scale-110"
-                     id="poke-sprite"
-                     src="{{ $pokemon->sprite_url }}">
-
-                <!-- Result Overlay (shown after guess / reveal) -->
-                <div class="absolute inset-0 z-20 flex flex-col justify-center items-center bg-primary/90
-                            opacity-0 pointer-events-none text-center p-md"
-                     id="result-overlay">
-                    <span class="font-display-lg text-on-primary-container leading-none" id="result-name">IT'S PIKACHU!</span>
-                    <div class="mt-md bg-white border-2 border-on-background px-md py-xs rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                        <span class="font-label-mono text-on-background" id="result-xp">+100 XP</span>
-                    </div>
+                    <!-- Name reveal banner — replaces the yellow overlay (fix #2) -->
+                    <div class="hidden" id="name-banner"><span id="banner-name"></span></div>
                 </div>
+
+                <button id="next-btn"
+                        onclick="handleNext()"
+                        class="hidden self-center bg-primary-container text-on-primary-container font-label-mono text-label-mono
+               px-md py-sm border-4 border-on-background rounded-lg
+               shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none
+               hover:translate-x-1 hover:translate-y-1 transition-all press-effect
+               flex items-center gap-xs">
+                    <span class="material-symbols-outlined" style="font-size:18px;">skip_next</span>
+                    NEXT
+                </button>
             </div>
 
-            <!-- ── Control Panel ── -->
+            <!-- Control Panel -->
             <div class="flex flex-col gap-md">
                 <div class="bg-white border-4 border-on-background p-md rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
                     <label class="block font-label-mono text-label-mono text-on-surface-variant mb-base uppercase">
@@ -173,20 +169,19 @@
 
                     <!-- Lives -->
                     <div class="flex gap-base mt-md items-center" id="lives-row">
-                        @for ($i = 0; $i < 3; $i++)
-                            <span class="material-symbols-outlined text-tertiary life-icon"
+                        @for($i = 0; $i < 3; $i++)
+                            <span class="material-symbols-outlined life-icon text-tertiary"
                                   style="font-variation-settings: 'FILL' {{ $i < $chancesLeft ? '1' : '0' }}, 'wght' 400, 'GRAD' 0, 'opsz' 24;">
                                 {{ $i < $chancesLeft ? 'favorite' : 'favorite_border' }}
                             </span>
                         @endfor
-                        <span class="ml-auto font-label-mono text-label-mono text-on-surface-variant"
-                              id="chances-label">
+                        <span class="ml-auto font-label-mono text-label-mono text-on-surface-variant" id="chances-label">
                             CHANCES: {{ $chancesLeft }}/3
                         </span>
                     </div>
                 </div>
 
-                <!-- Guess / Reveal Buttons -->
+                <!-- Guess / Reveal buttons -->
                 <div class="grid grid-cols-2 gap-md">
                     <button class="bg-primary-container text-on-primary-container font-headline-sm text-headline-sm
                                    py-md border-4 border-on-background rounded-lg
@@ -195,23 +190,35 @@
                             id="guess-btn">
                         GUESS
                     </button>
-                    <button class="bg-secondary text-on-secondary font-headline-sm text-headline-sm
-                                   py-md border-4 border-on-background rounded-lg
-                                   shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none
-                                   hover:translate-x-1 hover:translate-y-1 transition-all press-effect"
-                            id="reveal-btn">
-                        REVEAL
-                    </button>
-                </div>
-            </div>
-        </div><!-- /grid -->
 
-    </div><!-- /inner -->
+                    {{-- Reveal button: label changes per mode --}}
+                    @if($revealLimit === 0)
+                        {{-- Hard mode: button shown but permanently disabled --}}
+                        <button class="reveal-disabled bg-surface-variant text-on-surface-variant font-headline-sm text-headline-sm
+                                       py-md border-4 border-on-background rounded-lg" disabled id="reveal-btn">
+                            NO REVEAL
+                        </button>
+                    @else
+                        <button class="bg-secondary text-on-secondary font-headline-sm text-headline-sm
+                                       py-md border-4 border-on-background rounded-lg
+                                       shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none
+                                       hover:translate-x-1 hover:translate-y-1 transition-all press-effect"
+                                id="reveal-btn">
+                            @if($revealLimit === -1)
+                                REVEAL
+                            @else
+                                REVEAL ({{ $revealsLeft }})
+                            @endif
+                        </button>
+                    @endif
+                </div>
+
+            </div>
+        </div>
+    </div>
 </main>
 
-<!-- ═══════════════════════════════════════════════════════
-     GAME OVER MODAL
-════════════════════════════════════════════════════════ -->
+<!-- GAME OVER MODAL -->
 <div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 hidden" id="game-over-modal">
     <div class="bg-surface border-4 border-on-background rounded-xl p-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]
                 max-w-sm w-full mx-md text-center transform -rotate-1">
@@ -240,22 +247,17 @@
     </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════
-     JAVASCRIPT – Game Logic
-════════════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT -->
 <script>
-    // ── Blade-injected initial state ──────────────────────────────────────
-    const CSRF      = document.querySelector('meta[name="csrf-token"]').content;
-    const MODE      = "{{ $mode }}";
+    const CSRF       = document.querySelector('meta[name="csrf-token"]').content;
+    const MODE       = "{{ $mode }}";
+    const REVEAL_LIMIT = {{ $revealLimit }}; // -1=unlimited, 0=none, 3=medium
     const GUESS_URL  = "{{ route('game.guess') }}";
     const REVEAL_URL = "{{ route('game.reveal') }}";
-    const HOME_URL   = "{{ route('home') }}";
 
-    // ── DOM refs ──────────────────────────────────────────────────────────
     const pokeSprite    = document.getElementById('poke-sprite');
-    const resultOverlay = document.getElementById('result-overlay');
-    const resultName    = document.getElementById('result-name');
-    const resultXp      = document.getElementById('result-xp');
+    const nameBanner    = document.getElementById('name-banner');
+    const bannerName    = document.getElementById('banner-name');
     const titleHighlight = document.getElementById('title-highlight');
     const scoreCounter  = document.getElementById('score-counter');
     const chancesLabel  = document.getElementById('chances-label');
@@ -263,24 +265,39 @@
     const pokeInput     = document.getElementById('poke-input');
     const guessBtn      = document.getElementById('guess-btn');
     const revealBtn     = document.getElementById('reveal-btn');
+    const nextBtn       = document.getElementById('next-btn');
     const gameOverModal = document.getElementById('game-over-modal');
     const finalScore    = document.getElementById('final-score');
 
-    // ── State ─────────────────────────────────────────────────────────────
-    let chancesLeft    = {{ $chancesLeft }};
-    let currentScore   = {{ $score }};
-    let roundActive    = true;  // false while showing result before next round
+    let chancesLeft  = {{ $chancesLeft }};
+    let revealsLeft  = {{ $revealsLeft }};
+    let currentScore = {{ $score }};
+    let roundActive  = true;
+    let pendingNext  = null; // sprite_url for the next Pokémon, set when round ends
+
+    // ── Audio (fix #4) ────────────────────────────────────────────────────
+    // Uses the Web Speech API to say "Who's that Pokémon?" — no audio file needed
+    function speakWhosThat() {
+        if (!window.speechSynthesis) return;
+        const utter = new SpeechSynthesisUtterance("Who's that Pokémon?");
+        utter.rate   = 0.9;
+        utter.pitch  = 1.1;
+        utter.volume = 0.8;
+        window.speechSynthesis.cancel(); // stop any previous
+        window.speechSynthesis.speak(utter);
+    }
+
+    // Speak on page load
+    window.addEventListener('load', () => {
+        setTimeout(speakWhosThat, 600);
+    });
 
     // ── Helpers ───────────────────────────────────────────────────────────
 
     function postJSON(url, body) {
         return fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': CSRF,
-                'Accept': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
             body: JSON.stringify(body),
         }).then(r => r.json());
     }
@@ -300,54 +317,74 @@
         chancesLabel.textContent = `CHANCES: ${n}/3`;
     }
 
-    function showRevealedState(displayName, spriteUrl, xpText) {
-        // Reveal the silhouette
+    function updateRevealButton(n) {
+        revealsLeft = n;
+        if (!revealBtn || REVEAL_LIMIT === 0) return;
+        if (REVEAL_LIMIT === -1) return; // unlimited — label stays "REVEAL"
+        revealBtn.textContent = `REVEAL (${n})`;
+        if (n <= 0) {
+            revealBtn.disabled = true;
+            revealBtn.classList.add('reveal-disabled');
+            revealBtn.classList.remove('bg-secondary', 'text-on-secondary');
+            revealBtn.classList.add('bg-surface-variant', 'text-on-surface-variant');
+        }
+    }
+
+    // Fix #2: show clean revealed sprite + name banner, then show NEXT button
+    function showRevealedState(displayName, xpText) {
         pokeSprite.classList.remove('silhouette');
         pokeSprite.classList.add('revealed');
 
-        // Update overlay text
-        resultName.textContent = `IT'S ${displayName.toUpperCase()}!`;
-        resultXp.textContent   = xpText;
-        resultOverlay.style.opacity = '1';
+        bannerName.textContent = `IT'S ${displayName.toUpperCase()}!`;
+        nameBanner.style.opacity = '1';
 
-        // Update title card
         titleHighlight.textContent = displayName.toUpperCase() + '!';
 
-        // Disable inputs during transition
         setInputsEnabled(false);
+
+        // Show the NEXT button so player controls when to advance
+        nextBtn.classList.remove('hidden');
+        nextBtn.classList.add('flex');
     }
 
-    function loadNextPokemon(nextData) {
-        // After a short pause, load the next round
+    // Fix #2: player presses NEXT — this triggers the actual round transition
+    function handleNext() {
+        if (!pendingNext) {
+            showGameOver(currentScore);
+            return;
+        }
+
+        // Hide NEXT button immediately
+        nextBtn.classList.add('hidden');
+        nextBtn.classList.remove('flex');
+
+        // Fade sprite out, swap, fade in
+        pokeSprite.style.opacity = '0';
         setTimeout(() => {
-            if (!nextData) {
-                // No more Pokémon (shouldn't happen, but guard anyway)
-                showGameOver(currentScore);
-                return;
-            }
+            pokeSprite.src = pendingNext.sprite_url;
+            pokeSprite.classList.add('silhouette');
+            pokeSprite.classList.remove('revealed');
+            pokeSprite.style.opacity = '1';
+            pendingNext = null;
+        }, 300);
 
-            // Fade out sprite
-            pokeSprite.style.opacity = '0';
-            setTimeout(() => {
-                pokeSprite.src = nextData.sprite_url;
-                pokeSprite.classList.add('silhouette');
-                pokeSprite.classList.remove('revealed');
-                pokeSprite.style.opacity = '1';
-            }, 300);
+        // Hide name banner
+        nameBanner.style.opacity = '0';
 
-            // Hide overlay
-            resultOverlay.style.opacity = '0';
+        // Reset title
+        titleHighlight.textContent = 'POKÉMON?';
 
-            // Reset title
-            titleHighlight.textContent = 'POKÉMON?';
+        // Re-enable inputs and reset lives to current chancesLeft
+        pokeInput.value = '';
+        setInputsEnabled(true);
+        roundActive = true;
 
-            // Re-enable inputs
-            pokeInput.value = '';
-            setInputsEnabled(true);
-            roundActive = true;
+        // Fix #1: lives reset to 3 only on correct guess — handled server-side
+        // Here we just sync whatever the server says chances_left is
+        updateLives(chancesLeft);
 
-            updateLives(3);
-        }, 2200); // Show result for ~2 seconds before advancing
+        // Announce new Pokémon
+        speakWhosThat();
     }
 
     function showGameOver(score) {
@@ -358,7 +395,10 @@
     function setInputsEnabled(enabled) {
         pokeInput.disabled = !enabled;
         guessBtn.disabled  = !enabled;
-        revealBtn.disabled = !enabled;
+        // Only re-enable reveal if reveals are still available
+        if (revealBtn && REVEAL_LIMIT !== 0) {
+            revealBtn.disabled = !enabled || (REVEAL_LIMIT > 0 && revealsLeft <= 0);
+        }
         roundActive = enabled;
     }
 
@@ -373,26 +413,26 @@
         if (!val) return;
 
         const data = await postJSON(GUESS_URL, { guess: val });
-
-        if (data.error) {
-            console.error(data.error);
-            return;
-        }
+        if (data.error) { console.error(data.error); return; }
 
         if (data.correct) {
             currentScore = data.score;
             scoreCounter.textContent = currentScore;
-
-            showRevealedState(data.revealed.display_name, data.revealed.sprite_url, '+100 XP');
-            loadNextPokemon(data.next);
+            // Fix #1: correct guess resets lives to 3
+            updateLives(data.chancesLeft);
+            pendingNext = data.next;
+            showRevealedState(data.revealed.display_name, '+100 XP');
 
         } else if (data.game_over) {
-            // Wrong and out of chances
-            showRevealedState(data.revealed.display_name, data.revealed.sprite_url, 'WRONG!');
-            setTimeout(() => showGameOver(data.score), 2200);
+            pendingNext = null;
+            showRevealedState(data.revealed.display_name, 'WRONG!');
+            // Replace NEXT button with game-over trigger
+            nextBtn.textContent = '';
+            nextBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:28px;">close</span> GAME OVER';
+            nextBtn.onclick = () => showGameOver(data.score);
 
         } else {
-            // Wrong but still has chances
+            // Fix #1: lives reduced, stays reduced even if reveal is pressed later
             updateLives(data.chancesLeft);
             pokeInput.classList.add('border-error', 'shake');
             setTimeout(() => {
@@ -404,22 +444,24 @@
 
     // ── Reveal ────────────────────────────────────────────────────────────
     async function handleReveal() {
-        if (!roundActive) return;
+        if (!roundActive || REVEAL_LIMIT === 0) return;
 
         const data = await postJSON(REVEAL_URL, {});
+        if (data.error) { console.error(data.error); return; }
 
-        if (data.error) {
-            console.error(data.error);
-            return;
-        }
+        // Fix #1: do NOT reset lives — server no longer resets them either
+        // Just update the reveal counter
+        updateRevealButton(data.revealsLeft);
 
-        showRevealedState(data.revealed.display_name, data.revealed.sprite_url, 'NO POINTS');
-        loadNextPokemon(data.next);
+        pendingNext = data.next;
+        showRevealedState(data.revealed.display_name, 'NO POINTS');
     }
 
     // ── Event listeners ───────────────────────────────────────────────────
     guessBtn.addEventListener('click', handleGuess);
-    revealBtn.addEventListener('click', handleReveal);
+    if (revealBtn && REVEAL_LIMIT !== 0) {
+        revealBtn.addEventListener('click', handleReveal);
+    }
     pokeInput.addEventListener('keypress', e => { if (e.key === 'Enter') handleGuess(); });
 </script>
 </body>

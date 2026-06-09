@@ -185,8 +185,17 @@
             </div>
         </div>
 
+        <!-- Pokédex Button -->
+        <div class="mt-md w-full">
+            <a href="{{ route('pokedex.index') }}"
+               class="w-full bg-secondary-container text-on-secondary-container border-border-width border-on-background rounded-xl py-md px-xl font-label-mono text-label-mono transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-md hover:translate-x-1 hover:translate-y-1 hover:shadow-none">
+                <span class="material-symbols-outlined" style="font-size: 28px;">menu_book</span>
+                POKÉDEX
+            </a>
+        </div>
+
         <!-- Play Button -->
-        <div class="mt-xl w-full">
+        <div class="mt-sm w-full">
             <button class="w-full bg-surface-variant text-outline border-border-width border-outline rounded-xl py-lg px-xl font-display-lg-mobile text-display-lg-mobile transition-all shadow-[0px_4px_0px_0px_rgba(0,0,0,0.2)] flex items-center justify-center gap-md cursor-not-allowed"
                     disabled id="play-button">
                 <span class="material-symbols-outlined" style="font-size: 40px;">play_arrow</span>
